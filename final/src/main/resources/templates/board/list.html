@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>게시글 목록</title>
+	<link rel="stylesheet" th:href="@{/css/base.css}" />
+	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+	<script th:src="@{/js/jquery.min.js}"></script>
+	<style>
+		#content {
+			display: block;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			width: 300px;
+		}
+
+		#title {
+			display: block;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			width: 300px;
+		}
+	</style>
+</head>
+
+<body>
+	<div th:replace="layout/header::header"></div>
+	<!-- spring security를 통해 로그인한 사용자의 정보를 받아옴 -->
+	<!-- isAuthenticated(): 로그인 한 경우에만 인사말 출력 -->
+
+	<div class="container">
+		<div sec:authorize="isAuthenticated()" class="pull-right">
+			<span>Welcome, </span><span sec:authentication="name" />
+		</div>
+		<div class="page-header">
+			<!--    검색기능    -->
+			<div class="pull-right pt-site-footer__submit">
+				<form th:action="@{'/' + ${boardName} + '/search'}" name="search" class="pull-right">
+					<input type="search" placeholder="Enter the keyword" name="searchKeyword">
+					<button type="submit" class="btn btn-primary ">Search</button>
+				</form>
+			</div>
+			<!-- 이 타이틀이 카테고리 이름이 돼야 함
+			타임리프로 관리자가 새로 등록했던 그 boardName을 가져와야 함 -->
+			<h1 th:text="${boardName}"></h1>
+		</div>
+		<br />
+		<div class="pull-right" style="width: 100px; margin: 10px 0;">
+			<!-- (로그인 한 사용자만 글을 쓸 수 있도록)post방식으로 전달하기 위해 부득이하게 form을 사용함 -->
+			<form th:action="@{'/' + ${boardName} + '/create-post'}" method="post">
+				<input id="board_name" type="hidden" th:value="${article?.boardName}" />
+				<button type="submit" class="btn btn-primary btn-block">Create
+					new Post</button>
+			</form>
+		</div>
+		<br /> <br /> <br />
+		<div id="mainHide">
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">Title</th>
+						<th scope="col">Content</th>
+						<th scope="col">Writer</th>
+						<th scope="col">Comment</th>
+						<th scope="col">Date</th>
+					</tr>
+				</thead>
+				</tbody>
+				<tr th:each="article : ${articleList}">
+					<!-- 게시물 번호로도 클릭할 수 있도록 -->
+					<td><a th:href="'/' + ${boardName} + '/article?no='+${article.id}" th:text="${article.id}"></a></td>
+					<td><a th:href="'/' + ${boardName} + '/article/?no='+${article.id}" th:text="${article.title}"
+							id="title"></a></td>
+					<td th:text="${article.content}" id="content"></td>
+					<td th:text="${article.user.nickname}"></td>
+					<td th:text="${article.user.nickname}"></td>
+					<td th:text="${#dates.format(article.wdate,'yyyy-MM-dd')}"></td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
+		<br />
+		<!-- Pagination -->
+		<nav aria-label="Page navigation" style="text-align: center;">
+			<ul class="pagination"
+				th:with="startNumber=${T(java.lang.Math).floor(articleList.number/5)}*5+1, endNumber=(${articleList.totalPages} > ${startNumber}+4) ? ${startNumber}+4 : ${articleList.totalPages}">
+				<li><a aria-label="Previous" th:href="@{'/' + ${boardName} + '/list?page=1'}">«</a></li>
+
+				<li th:style="${articleList.first} ? 'display:none'"><a
+						th:href="@{'/' + ${boardName} + '/list'(page=${articleList.number})}">‹</a></li>
+
+				<li th:each="page :${#numbers.sequence(startNumber, endNumber)}"
+					th:class="(${page} == ${articleList.number}+1) ? 'active'">
+					<a th:href="@{'/' + ${boardName} + '/list'(page=${page})}" th:text="${page}">
+						<span class="sr-only"></span>
+					</a>
+				</li>
+				​
+				<li th:style="${articleList.last} ? 'display:none'"><a
+						th:href="@{'/' + ${boardName} + '/list'(page=${articleList.number}+2)}">›</a></li>
+
+				<li><a aria-label="Next" th:href="@{'/' + ${boardName} + '/list'(page=${articleList.totalPages})}">»</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+</body>
+
+</html>

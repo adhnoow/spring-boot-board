@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Manage Board</title>
+	<link rel="stylesheet" th:href="@{/css/base.css}" />
+	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+</head>
+
+<body>
+	<table>
+		<thead>
+			<tr>
+				<th scope="col">-</th>
+				<th scope="col">Id</th>
+				<th scope="col">Email</th>
+				<th scope="col">Username</th>
+				<th scope="col">Title</th>
+			</tr>
+			<thead>
+				<tr th:each="board : ${boardList}">
+					<td th:text="${board.id}"></td>
+					<td th:text="${board.boardName}"></td>
+					<td th:text="${board.username}"></td>
+					<td th:text="${board.email}"></td>
+					<td th:text="${board.role}"></td>
+					<td><input type="image" th:onclick="updateBtn([[${user.id}]])" src="/imgs/edit.png"
+							class="updateBtn" alt="add manager" /> <input type="image"
+							th:onclick="deleteBtn([[${user.id}]])" src="/imgs/delete.png" class="deleteBtn"
+							alt="delete button" /></td>
+				</tr>
+				</tbody>
+	</table>
+	<!-- Pagination -->
+	<nav aria-label="Page navigation" style="text-align: center;">
+		<ul class="pagination"
+			th:with="startNumber=${T(java.lang.Math).floor(boardList.number/5)}*5+1, endNumber=(${boardList.totalPages} > ${startNumber}+4) ? ${startNumber}+4 : ${boardList.totalPages}">
+			<li><a aria-label="Previous" href="/manageBoard?page=1">«</a></li>
+
+			<li th:style="${boardList.first} ? 'display:none'"><a
+					th:href="@{/manageBoard(page=${boardList.number})}">‹</a></li>
+
+			<li th:each="page :${#numbers.sequence(startNumber, endNumber)}"
+				th:class="(${page} == ${boardList.number}+1) ? 'active'"><a th:href="@{/manageBoard(page=${page})}"
+					th:text="${page}"> <span class="sr-only"></span></a></li> ​
+			<li th:style="${userList.last} ? 'display:none'"><a
+					th:href="@{/manageBoard(page=${boardList.number}+2)}">›</a></li>
+
+			<li><a aria-label="Next" th:href="@{/manageBoard(page=${boardList.totalPages})}">»</a></li>
+		</ul>
+	</nav>
+</body>
+
+</html>

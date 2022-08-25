@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Insert title here</title>
+	<script th:src="@{/js/jquery.min.js}"></script>
+	<script type="text/javascript">
+		function updateCommentDoneBtn(id) {
+			var boardName = $('#board_name').val();
+			//alert(boardName)
+			//alert("id  " + id); // O
+			//alert('article_idx: ' + $('#article_idx').val());
+			//alert($('#comment_content').val());
+			$.ajax({
+				url: "/comment/update/" + id,
+				type: "PUT",
+				contentType: "application/json",
+				data: JSON.stringify({
+					comment: $('#comment_content').val()
+				}),
+				success: function () {
+					alert('수정되었습니다');
+					location.replace('/' + boardName + '/article?no='
+						+ $('#article_idx').val());
+				},
+				error: function () {
+					alert('수정을 실패하였습니다');
+					location.replace('/' + boardName + '/article?no='
+						+ $('#article_idx').val());
+				}
+			});
+		}
+
+		$('form').submit(function (e) {
+			e.preventDefault();
+		})
+	</script>
+</head>
+
+<body>
+	<form>
+		<div th:each="comment : ${comment}">
+			<!-- 댓글 내용 출력 -->
+			<textarea th:text="${comment.comment}" id="comment_content" required></textarea>
+		</div>
+		<!-- update + delete button -->
+		<div>
+			<!-- 버튼 함수에 댓글 id값을 함께 넘겨서 ajax에서 해당하는 댓글의 아이디를 받을 수 있도록 함 -->
+			<button th:onclick="updateCommentDoneBtn([[${comment.id}]])">ok</button>
+			<input type="reset" value="reset" />
+		</div>
+	</form>
+</body>
+
+</html>

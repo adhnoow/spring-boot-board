@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+<meta charset="UTF-8">
+<title>Manage User</title>
+<link rel="stylesheet" th:href="@{/css/base.css}" />
+<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+<script th:src="@{/js/jquery.min.js}"></script>
+<script>
+		// manager, user 권한 부여
+		function addAndRemoveManagerBtn(action, id, name) {
+			//alert('addManagerBtn')
+			//alert(id)
+			//alert(name)
+			//alert(action)
+			$.ajax({
+				url: "/manageUser/" + action + "-manager/" + id,
+				type: "PUT",
+				dataType: 'text', // String 값을 return하기 때문
+				success: function(message) {
+					alert(message + '"' + name + '"');
+					location.replace('/manageUser');
+				},
+				error: function() {
+					alert('Fail to grant');
+					location.replace('/manageUser');
+				}
+			}) 
+		}; 
+	</script>
+</head>
+
+<body>
+	<table>
+		<thead>
+			<tr>
+				<th scope="col">-</th>
+				<th scope="col">Created Date</th>
+				<th scope="col">Id</th>
+				<th scope="col">Email</th>
+				<th scope="col">Username</th>
+				<th scope="col">Title</th>
+			</tr>
+		<thead>
+			<tr th:each="user : ${userList}">
+				<td th:text="${user.id}"></td>
+				<td th:text="${user.createDate}"></td>
+				<td th:text="${user.username}"></td>
+				<td th:text="${user.email}"></td>
+				<td th:text="${user.nickname}">
+					<p id="nickname" th:value="${user.nickname}"></p>
+				</td>
+				<td th:text="${user.role}"></td>
+				<td><input type="image"
+					th:onclick="addAndRemoveManagerBtn('add', [[${user.id}]], [[${user.nickname}]])"
+					src="/imgs/edit.png" alt="add manager" /> <input type="image"
+					th:onclick="addAndRemoveManagerBtn('remove', [[${user.id}]], [[${user.nickname}]])"
+					src="/imgs/delete.png" alt="remove manager" /><input type="image"
+					th:onclick="deleteBtn([[${user.id}]], [[${user.nickname}]])"
+					src="/imgs/delete.png" class="deleteBtn" alt="delete button" /></td>
+			</tr>
+		</tbody>
+	</table>
+	<!-- Pagination -->
+	<nav aria-label="Page navigation" style="text-align: center;">
+		<ul class="pagination"
+			th:with="startNumber=${T(java.lang.Math).floor(userList.number/5)}*5+1, endNumber=(${userList.totalPages} > ${startNumber}+4) ? ${startNumber}+4 : ${userList.totalPages}">
+			<li><a aria-label="Previous" href="/manageUser?page=1">«</a></li>
+
+			<li th:style="${userList.first} ? 'display:none'"><a
+				th:href="@{/manageUser(page=${userList.number})}">‹</a></li>
+
+			<li th:each="page :${#numbers.sequence(startNumber, endNumber)}"
+				th:class="(${page} == ${userList.number}+1) ? 'active'"><a
+				th:href="@{/manageUser(page=${page})}" th:text="${page}"> <span
+					class="sr-only"></span></a></li> ​
+			<li th:style="${userList.last} ? 'display:none'"><a
+				th:href="@{/manageUser(page=${userList.number}+2)}">›</a></li>
+			<li><a aria-label="Next"
+				th:href="@{/manageUser(page=${userList.totalPages})}">»</a></li>
+		</ul>
+	</nav>
+</body>
+
+</html>

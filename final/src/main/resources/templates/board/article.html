@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Article Form</title>
+	<link rel="stylesheet" th:href="@{/css/base.css}" />
+	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+	<script th:src="@{/js/jquery.min.js}"></script>
+	<script th:if="${article?.id}" defer>
+		/* article button scripts */
+		// 게시글: [수정] 버튼을 눌렀을 때 수정 폼으로 넘겨주는 함수
+		function updateArticleBtn(id) {
+			//alert(id) 
+			$.ajax({
+				url: "/article/update/" + id,
+				type: "POST",
+				data: {
+					id: id
+				},
+				contentType: "application/json", // application/json ==> {key: value} 형태
+				success: function (recvData) {
+					//alert('불러오기 성공');
+					$('#replace-article').html(recvData);
+				},
+				error: function () {
+					alert("error");
+				}
+			});
+		}
+
+		// 게시글: [완료] 버튼을 눌렀을 때 쿼리문 실행 후 list로 돌아가는 함수
+		function updateArticleDoneBtn(id) {
+			//alert('article_idx: ' + $('#article_idx').val())
+			//alert('article_user: ' + $('#article_user').val())
+			//alert('article_create_date: ' + $('#article_create_date').val())
+			//alert(JSON.stringify($('#article_user').val()))
+			var boardName = $('#board_name').val();
+
+			$.ajax({
+				url: "/article/update/" + id,
+				type: "PUT",
+				data: JSON.stringify({
+					id: id,
+					title: $('#article_title').val(),
+					content: $('#article_content').val()
+					/* date 타입 변환과 관련해서 오류가 나서 값이 안 넘어감
+					그래서 wdate 값과 user(createDate)값은 null로 넘기고 
+					컨트롤러에서 id값으로 찾아 넘기기로 함
+					
+					wdate : $('#article_create_date').val()
+					user : $('#article_user').val( )*/
+				}),
+				contentType: "application/json", // application/json ==> {key: value} 형태
+				success: function () {
+					alert('수정되었습니다');
+					location.replace('/' + boardName + '/list'); // 게시글 수정 후 뒤로가기가 불가능하도록 현재 페이지를 바꾸는 replace 사용
+				},
+				error: function () {
+					alert('수정을 실패하였습니다');
+				}
+			});
+		}
+
+		// 게시글: [삭제] 버튼을 눌렀을 때 쿼리문 실행 후 list로 돌아가는 함수
+		function deleteArticleBtn(id) {
+			//alert(id); 
+			var boardName = $('#board_name').val();
+			var input = confirm('삭제하시겠습니까?');
+
+			if (input === true) {
+				$.ajax({
+					url: "/article/delete/" + id,
+					type: "DELETE",
+					success: function () {
+						alert('삭제되었습니다');
+						location.replace('/' + boardName + '/list'); // 게시글 수정 후 뒤로가기가 불가능하도록 현재 페이지를 바꾸는 replace 사용
+					},
+					error: function () {
+						alert('삭제를 실패하였습니다');
+					}
+				});
+			}
+		}
+
+		/* comment button scripts */
+		// 댓글: [수정] 버튼을 눌렀을 때 댓글 수정 폼을 넘겨주는 함수
+		function updateCommentBtn(id) {
+			//alert(id)
+			$.ajax({
+				url: "/comment/update/" + id,
+				type: "POST",
+				data: {
+					id: id
+				},
+				contentType: "application/json", // application/json ==> {key: value} 형태
+				success: function (data) {
+					//alert('불러오기 성공');
+					$('#replace-comment').html(data);
+					//alert(recvData);
+				},
+				error: function () {
+					alert("error");
+				}
+			});
+		}
+
+		// 댓글: [삭제] 버튼을 눌렀을 때 쿼리문 실행 후 해당 게시글로 돌아가는 함수
+		function deleteCommentBtn(id) {
+			//alert("id  " + id)
+			//alert('article_idx: ' + $('#article_idx').val())
+			var boardName = $('#board_name').val();
+			//alert(boardName)
+			var input = confirm('삭제하시겠습니까?');
+			if (input === true) {
+				$.ajax({
+					url: "/comment/delete/" + id,
+					type: "DELETE",
+					success: function () {
+						alert('삭제되었습니다');
+						// 새로고침을 새 창 열기로 할 경우, 
+						// 댓글 삭제를 여러번 할 시 뒤로가기를 여러번 해야 하기 때문에
+						// 현재 페이지를 바꾸는 replace를 사용함
+						location.replace('/' + boardName + '/article?no='
+							+ $('#article_idx').val());
+					},
+					error: function () {
+						alert('삭제를 실패하였습니다');
+						location.replace('/' + boardName + '/article?no='
+							+ $('#article_idx').val());
+					}
+				});
+			}
+		} 
+	</script>
+</head>
+
+<body>
+	<!-- header -->
+	<div th:replace="layout/header::header" />
+	</div>
+
+	<div class="container">
+		<input id="board_name" type="hidden" th:value="${article?.boardName}" />
+		<input id="article_idx" type="hidden" th:value="${article?.id}" /> <input id="article_create_date" type="hidden"
+			th:value="${article?.wdate}" />
+		<input id="article_user" type="hidden" th:value="${article.user}" />
+		<!--     게시글 출력     -->
+		<div id="replace-article">
+			<br> <br> <br> <br>
+			<table class="table">
+				<tr>
+					<th style="padding: 13px 0 0 15px;">Date</th>
+					<td>
+						<!-- date 타입의 시간을 fomatting 함 --> <span class="col-md-1 input-sm"
+							th:text="${#dates.format(article?.wdate,'yyyy-MM-dd HH:mm')}"
+							style="width: auto;">></span><span class="help-block"></span>
+					</td>
+					<th style="padding: 13px 0 0 15px;">Writer</th>
+					<td><span id="article_nickname" class="col-md-1 input-sm" th:text="${article.user.nickname}"
+							style="width: auto;"></span><span class="help-block"></span></td>
+				</tr>
+				<tr>
+					<th style="padding: 13px 0 0 15px;">Title</th>
+					<td><span id="article_title" class="col-md-1 input-sm" th:text="${article?.title}"
+							style="width: auto;"></span><span class="help-block"></span></td>
+				</tr>
+				<tr>
+				</tr>
+				<tr>
+					<th style="padding: 13px 0 0 15px;">Context</th>
+					<td><span id="article_content" class="col-md-1 input-sm" th:text="${article?.content}"
+							style="width: auto"></span> <span class="help-block"></span></td>
+					<th style="padding: 13px 0 0 15px;"></th>
+					<th style="padding: 13px 0 0 15px;"></th>
+				</tr>
+				<tr>
+					<td></td>
+					<td></td>
+					<th style="padding: 13px 0 0 15px;"></th>
+					<th style="padding: 13px 0 0 15px;"></th>
+				</tr>
+			</table>
+			<div class="pull-left">
+				<a th:href="@{'/' + ${article?.boardName} + '/list'}" class="btn btn-default">Back</a>
+			</div>
+			<!-- authentication을 통해서 작성자, MANAGER, ADMIN만 삭세/수정 버튼이 보이도록 함 -->
+			<div th:if="${#authentication.name} == ${article.user.username} 
+						or ${#authorization.expression('hasAuthority(''ROLE_MANAGER'')')} 
+						or ${#authorization.expression('hasAuthority(''ROLE_ADMIN'')')}" class="pull-right">
+				<!-- ${#authentication.getAuthorities()} == ${#authorization.expression('hasAnyRole(''ROLE_ADMIN'')')${hasAnyRole('ROLE_ADMIN', 'ROLE_MANAGER')" class="pull-right"> -->
+				<!-- sec:authorize access="hasAnyRole('ADMIN', 'MANAGER')" -->
+				<button class="btn btn-info" th:onclick="updateArticleBtn([[${article?.id}]])">Edit</button>
+				<button class="btn btn-danger" th:onclick="deleteArticleBtn([[${article?.id}]])">Delete</button>
+			</div>
+
+			<br> <br>
+			<!--     댓글 출력     -->
+			<!--     댓글 작성     -->
+			<div sec:authorize="isAuthenticated()">
+				<br> <br>
+				<button onclick="commentOnClick()">Write Comment</button>
+				<span sec:authentication="name"></span><br>
+				<!-- 로그인한 사용자만 댓글 작성을 할 수 있도록 -->
+				<form action="/comment/insert" method="post" sec:authorize="isAuthenticated()" id="commentForm"
+					translate="yes">
+					<!--  
+						- id, wdate: 자동 생성
+						- user: controller에서 Principle을 통해 setter로 주입
+						- article: article id 값만 넘겨주면 controller에서 setter로 주입  
+					-->
+					<input type="hidden" name="article" th:value="${article?.id}">
+					<textarea id="comment" name="reqComment" placeholder="Write a comment..." maxlength="500"
+						required></textarea>
+					<button type="submit">Publish</button>
+				</form>
+			</div>
+
+			<br> <br>
+			<!--     댓글 목록     -->
+			<!-- 타임리프의 size() 메소드를 통해 commentList 속성의 값의 개수를 알 수 있음 -->
+			<span th:text="${commentList.size()}" /><span> comments</span>
+			<hr>
+			<div th:each="comment : ${commentList}">
+
+				<tr>
+					<section  id="replace-comment">
+						<td class="commentList">
+							<div class="commentInfo">
+								<!-- 댓글 작성자 출력 -->
+								<p th:text="${comment.user.username}" />
+								<!-- 댓글 formatting한 시간 출력 -->
+								<p th:text="${#dates.format(comment.wdate,'yyyy-MM-dd HH:mm')}" />
+								<!-- 댓글 내용 출력 -->
+								<p th:text="${comment.comment}" />
+							</div> <!-- update + delete button -->
+							<div th:if="${#authentication.name} == ${comment.user.username} 
+						or ${#authorization.expression('hasAuthority(''ROLE_MANAGER'')')} 
+						or ${#authoprization.expression('hasAuthority(''ROLE_ADMIN'')')}" class="buttons">
+								<!-- 버튼 함수에 댓글 id값을 함께 넘겨서 ajax에서 해당하는 댓글의 아이디를 받을 수 있도록 함 -->
+								<input type="image" th:onclick="updateCommentBtn([[${comment.id}]])"
+									src="/imgs/edit.png" class="updateCommentBtn" alt="update button" /> <input
+									type="image" th:onclick="deleteCommentBtn([[${comment.id}]])" src="/imgs/delete.png"
+									class="deleteCommentBtn" alt="delete button" />
+							</div>
+						</td>
+					</section>
+				</tr>
+				<hr>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

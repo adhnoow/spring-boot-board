@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Search Result</title>
+	<link rel="stylesheet" th:href="@{/css/base.css}" />
+	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+</head>
+
+<body>
+	<div th:replace="layout/header::header"></div>
+	<br>
+	<br>
+	<br>
+	<br>
+	<h1>Search Result</h1>
+
+	<!-- 재검색을 했을때 컨트롤러를 통해 새 페이지를 로딩하게 되면
+	많은 검색을 한 사용자는 게시글 리스트로 돌아가려면 뒤로가기를 수십번 눌러야 됨
+	따라서 재검색 시에는 ajax를 통해 결과를 출력하고 뒤로가기를 누르면 바로 게시글 리스트가 뜨도록 함 -->
+
+	<!--    검색 기능    -->
+	<form action="/article/search" method="post" class="pull-right pt-site-footer__submit">
+		<input name="searchKeyword" type="text" placeholder="검색어 입력">
+		<button onclick="searchBtn()">Search</button>
+	</form>
+
+	<br>
+	<br>
+	<br>
+
+	<!--    결과 출력    -->
+	<div id="replace-search-result">
+		<div th:if="${not #lists.isEmpty(searchResult)}">
+			<!-- 타임리프의 size() 메소드를 통해 commentList 속성의 값의 개수를 알 수 있음 -->
+			<span th:text="${searchResult.size}"></span> <span class="title">
+				posts found for " </span> <span th:text="${searchKeyword}"></span><span>"</span>
+			<br> <br>
+			<table class="table table-hover">
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">제목</th>
+						<th scope="col">작성자</th>
+						<th scope="col">댓글</th>
+						<th scope="col">작성일</th>
+					</tr>
+					<thead>
+						<tr th:each="result : ${searchResult}">
+							<!-- 게시물 번호로도 클릭할 수 있도록 -->
+							<td><a th:href="'/' + ${boardName} + '/article?no='+${result.id}"
+									th:text="${result.id}"></a></td>
+							<td><a th:href="'/' + ${boardName} + '/article/?no='+${result.id}"
+									th:text="${result.title}"></a></td>
+							<td th:text="${result.user.nickname}"></td>
+							<td th:text="${result.user.nickname}"></td>
+							<td th:text="${#dates.format(result.wdate,'yyyy-MM-dd')}"></td>
+						</tr>
+						</tbody>
+			</table>
+			<br />
+			<!-- Pagination -->
+			<nav aria-label="Page navigation" style="text-align: center;">
+				<ul class="pagination"
+					th:with="startNumber=${T(java.lang.Math).floor(searchResult.number/5)}*5+1, endNumber=(${searchResult.totalPages} > ${startNumber}+4) ? ${startNumber}+4 : ${searchResult.totalPages}">
+					<li><a aria-label="Previous"
+							th:href="@{'/' + ${boardName} + '/search-'{searchKeyword}?page=1}">«</a>
+					</li>
+
+					<li th:style="${searchResult.first} ? 'display:none'"><a
+							th:href="@{'/' + ${boardName} + '/search-' + {searchKeyword}(page=${searchResult.number})}">‹</a>
+					</li>
+
+					<li th:each="page :${#numbers.sequence(startNumber, endNumber)}"
+						th:class="(${page} == ${searchResult.number}+1) ? 'active'"><a
+							th:href="@{'/' + ${boardName} + '/search-' + {searchKeyword}(page=${page})}"
+							th:text="${page}">
+							<span class="sr-only"></span></a></li> ​
+					<li th:style="${searchResult.last} ? 'display:none'"><a
+							th:href="@{'/' + ${boardName} + '/search-' + {searchKeyword}(page=${searchResult.number}+2)}">›</a>
+					</li>
+
+					<li><a aria-label="Next"
+							th:href="@{'/' + ${boardName} + '/search-' + {searchKeyword}(page=${searchResult.totalPages})}">»</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+		<div th:if="${#lists.isEmpty(searchResult)}">
+			<center>
+				<h2>Hmmm...</h2>
+				<h4>We couldn't find any matches for "</h4>
+				<h4 th:text="${searchKeyword}"></h4>
+				<h4>".</h4>
+				<br>
+				<h4>Please try again :(</h4>
+			</center>
+		</div>
+	</div>
+</body>
+
+</html>

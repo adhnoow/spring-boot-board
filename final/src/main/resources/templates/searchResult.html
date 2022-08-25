@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Search Result</title>
+</head>
+<body>
+	<!--     검색 결과     -->
+	<div id="replace-search-result"
+		th:if="${not #lists.isEmpty(searchResult)}">
+		<!-- 타임리프의 size() 메소드를 통해 commentList 속성의 값의 개수를 알 수 있음 -->
+		<span th:text="${searchResult.size()}" /> <span class="title">
+			posts found for " </span><span th:text="${searchKeyword}" /> <span>"</span>
+		<br>
+		<br>
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<th scope="col">#</th>
+					<th scope="col">제목</th>
+					<th scope="col">작성자</th>
+					<th scope="col">댓글</th>
+					<th scope="col">작성일</th>
+				</tr>
+			<thead>
+				<tr th:each="result : ${searchResult}">
+					<!-- 게시물 번호로도 클릭할 수 있도록 -->
+					<td><a th:href="'/article/?id='+${result.id}"
+						th:text="${result.id}"></a></td>
+					<td><a th:href="'/article?id='+${result.id}"
+						th:text="${result.title}"></a></td>
+					<td th:text="${result.user.nickname}"></td>
+					<td th:text="${result.user.nickname}"></td>
+					<td th:text="${#dates.format(result.wdate,'yyyy-MM-dd')}"></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<div th:if="${#lists.isEmpty(searchResult)}">
+		<center>
+			<h2>Hmmm...</h2>
+			<h4>We couldn't find any matches for "</h4>
+			<h4 th:text="${searchKeyword}"></h4>
+			<h4>".</h4>
+			<br>
+			<h4>Please try again :(</h4>
+		</center>
+	</div>
+</body>
+</html>

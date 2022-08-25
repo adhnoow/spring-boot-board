@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<title>Bootstrap Example</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" th:href="@{/css/base.css}" />
+	<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" /></head>
+
+<body> 
+	<div th:replace="layout/header::header"></div> 
+		<br><br><br><br>
+		<h1>Board List</h1>
+		<ul th:each="boardName : ${boardList}">
+			<li><a th:text="${boardName}" th:href="@{'/' + ${boardName} + '/list'}"></a></li>
+		</ul>
+		<div sec:authorize="hasRole('ROLE_ADMIN')">
+			<hr>
+			<ul>
+				<li><a href="/manageUser">MANAGE USER</a></li>
+				<li><a href="/manageBoard">MANAGE BOARD</a></li>
+			</ul>
+		</div> 
+</body>
+
+</html>

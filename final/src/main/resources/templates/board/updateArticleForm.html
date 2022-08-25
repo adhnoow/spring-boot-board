@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Board Form</title>
+</head>
+
+<body>
+	<div>
+		<table th:each="article : ${article}" class="table">
+			<tr>
+				<th style="padding: 13px 0 0 15px;">Date</th>
+				<td>
+					<!-- date 타입의 시간을 fomatting 함 --> <input type="text" class="col-md-1 form-control input-sm"
+						th:value="${#dates.format(article.wdate,'yyyy-MM-dd HH:mm')}" readonly="readonly" />
+				</td>
+			</tr>
+			<tr>
+				<th style="padding: 13px 0 0 15px;">Title</th>
+				<td><input id="article_title" type="text" class="col-md-1 form-control input-sm"
+						th:value="${article.title}" /></td>
+			</tr>
+			<tr>
+				<th style="padding: 13px 0 0 15px;">Context</th>
+				<td><textarea id="article_content" class="col-md-1 form-control input-sm" maxlength="3000" rows="7"
+						style="height: 200px;" th:text="${article.content}"></textarea><span class="help-block"></span>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+			</tr>
+		</table>
+		<div class="pull-right">
+			<button th:if="${article?.id}" class="btn btn-info"
+				th:onclick="updateArticleDoneBtn([[${article.id}]])">Publish</button>
+		</div>
+	</div>
+</body>
+
+</html>

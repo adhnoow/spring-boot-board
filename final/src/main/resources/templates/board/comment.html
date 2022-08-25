@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script>
+	// update Btn onclick()
+	function updateBtn(id) {
+		var id = id.toString(); // id값 가져오기
+		//alert(id);
+		var password = prompt('Enter a password');
+		var newGuestName = prompt('Enter a new guest name');
+		var newMessage = prompt('Enter a new message');
+
+		$.ajax({
+			url : '/message/' + id,
+			// application/json ==> {key: value} 형태
+			// (default)application/x-www-form-urlencoded ==> key=value&key=value 형태
+			// contentType를 설정해주지 않아서 json 형태로 전송 안됨 오류해결
+			contentType : 'application/json; charset=utf-8',
+			type : 'PUT',
+			data : JSON.stringify({
+				id : id,
+				password : password,
+				guestName : newGuestName,
+				message : newMessage,
+			}),
+			success : function(data) {
+				if (data.toString() == 'notCorrect') {
+					alert('Message updated successfully :D');
+				} else {
+
+				}
+				window.location.href = '/';
+			}
+		});
+	}
+
+	// delete Btn onclick()
+	function deleteBtn(id) {
+		var id = id.toString(); // taking id value
+		//alert(id);
+		var password = prompt('비밀번호?');
+
+		$.ajax({
+			url : '/message/' + id,
+			type : 'GET',
+			data : {
+				id : id,
+				password : password,
+			},
+			success : function(data) {
+				// alert(data);
+				alert('Message deleted successfully :D');
+				window.location.href = '/';
+			},
+			error : function(request, status, error) {
+				alert('비밀번호 틀림');
+			},
+		});
+	}
+</script>
+</head>
+<body>
+	<table>
+		<section th:each="m : ${messages}">
+			<tr>
+				<td class="messageList">
+					<div class="messageInfo">
+						<!-- 메시지 번호 출력 -->
+						<p th:text="${m.id}" class="messageId" />
+						<div class="messageContent">
+							<!-- 메시지 작성자 출력 -->
+							<p th:text="${m.guestName}" class="guestName" />
+							<!-- 메시지 내용 출력 -->
+							<p th:text="${m.message}" class="message" />
+						</div>
+					</div> <!-- update + delete button -->
+					<div class="buttons">
+						<input type="image" th:onclick="updateBtn([[${m.id}]])"
+							src="/imgs/edit.png" class="updateBtn" alt="update button" /> <input
+							type="image" th:onclick="deleteBtn([[${m.id}]])"
+							src="/imgs/delete.png" class="deleteBtn" alt="delete button" />
+					</div>
+				</td>
+			</tr>
+		</section>
+	</table>
+	<!-- 	<section class="nav">
+		<div th:if="${pageNumber} > ${P}">
+			<a href="?page=<%= pageNumber - P %>"> <img
+				src="resources/imgs/arrowLeft.svg" alt="previous">
+			</a>
+		</div>
+		<div th:each var="pageNum" begin="<%= begin %>" end="<%= end %>">
+			<a href="list.jsp?page=${pageNum}"> [${pageNum}] </a>
+		</div>
+		<div
+			th:if="${pageNumber} < messageListView.getPageTotalCount() - ${P} + 1">
+			<a href="?page=(${pageNumber} + P)"> <img
+				src="resources/imgs/arrowRight.svg" alt="next">
+			</a>
+		</div>
+	</section> -->
+</body>
+</html>
